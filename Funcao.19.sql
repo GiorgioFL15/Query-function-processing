@@ -1,0 +1,124 @@
+DROP DATABASE IF EXISTS DBFUNCAO;
+CREATE DATABASE DBFUNCAO;
+USE DBFUNCAO;
+
+CREATE TABLE ALUNO (
+	IDALUNO INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	NOME VARCHAR(20) NOT NULL,
+	SEXO ENUM ('M', 'F'),
+	DT_NASCIMENTO DATE,
+	CIDADE VARCHAR(20)
+);
+
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('ANDERSON'	, '1998-01-17', 'M','PALHOCA');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('CESAR'		, '1996-06-21', 'M', 'SAO JOSE');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('DANIEL'	, '1989-10-19', 'M', 'PALHOCA');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('DIEGO'		, '1991-12-19', 'M', 'BLUMENAU');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('EDUARDO'	, '1991-01-20', 'M', NULL);
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('GABRIEL'	, '1996-06-19', 'M', 'TUBARAO');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('JOAO'		, '1992-01-18', 'M', 'SAO JOSE');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('LEONARDO'	, '1989-07-19', 'M', NULL);
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('LUCAS'		, '1998-01-20', 'M', 'BLUMENAU');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('PRISCILA'	, '2005-04-19', 'M', 'PALHOÇA');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('RENATA'	, '1991-12-21', 'F', 'TUBARAO');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('MARIA'		, '1992-12-22', 'F', 'BLUMENAU');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('TANIA'		, '1996-08-19', 'F', 'SAO JOSE');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('CARLOS'	, '2001-10-22', 'M', 'TUBARAO');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('JOSE'		, '1996-06-19', 'M', 'PALHOCA');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('MARISA'	, '1991-06-19', 'F', NULL);
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('AMANDA'	, '2004-03-20', 'F', NULL);
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('JOANA'		, '1998-01-19', 'F', NULL);
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('ALICE'		, '1991-06-21', 'F', 'SAO JOSE');
+INSERT INTO ALUNO (NOME, DT_NASCIMENTO, SEXO, CIDADE)VALUES('TADEU'		, '1995-12-18', 'M', 'TUBARAO');
+
+
+DELIMITER $$
+-- 1
+CREATE FUNCTION getPos(letra char(1),nome varchar(100)) returns int
+BEGIN
+	return POSITION(letra IN nome);
+END $$
+
+-- 2
+CREATE FUNCTION formatarNome(nome varchar(100)) returns varchar(100)
+BEGIN
+	DECLARE nomeS VARCHAR(100) DEFAULT "";
+    DECLARE tamanho int DEFAULT 0;
+    DECLARE parteNome VARCHAR(100) DEFAULT "";
+    set tamanho = length(nome);
+    set nomeS = LOWER(nome);
+    set parteNome = substring(nomeS, 2,tamanho);
+    set nomeS = concat(upper(substring(nomeS, 1,1)),parteNome);
+    return nomeS;
+END $$
+
+-- 3
+CREATE FUNCTION formatSr(nome varchar(100),sexo char(1)) returns varchar(100)
+BEGIN
+
+	if(sexo = "M") then
+		return concat("Sr. ",formatarNome(nome));
+    elseif(sexo = "F") then
+		return concat("Sra. ",formatarNome(nome));
+    end if;
+END $$
+
+-- 4
+CREATE FUNCTION formatFrase(nome varchar(100),cidade varchar(100)) returns varchar(100)
+BEGIN
+	return CONCAT(formatarNome(nome)," mora em ",formatarNome(cidade));
+END $$
+
+CREATE FUNCTION getIdade(dtNascimento date) returns int
+BEGIN
+	return year(now())-year(dtNascimento);
+END $$
+
+DELIMITER ;
+
+-- 1
+
+SELECT
+	ALUNO.NOME,
+    getPos("r", ALUNO.NOME)
+FROM 
+	ALUNO
+WHERE
+	ALUNO.NOME LIKE "%r%";
+    
+-- 2 
+SELECT 
+	formatarNome(aluno.nome)
+FROM
+	ALUNO
+ORDER BY
+	ALUNO.NOME;
+    
+-- 3
+
+select
+	formatSr(aluno.nome,aluno.sexo)
+from
+	aluno;
+    
+-- 4
+
+select
+	formatFrase(aluno.nome,aluno.cidade)
+from
+	aluno;
+    
+-- 5
+
+SELECT 
+	aluno.nome,
+	getIdade(aluno.DT_NASCIMENTO) as idade
+FROM 
+	ALUNO;
+    
+-- 6
+SELECT
+	aluno.nome,
+    concat(day(aluno.DT_NASCIMENTO),"/", month(aluno.DT_NASCIMENTO))
+from 
+	aluno
